@@ -64,7 +64,7 @@ export async function handleLiveSession(ws: WebSocket, languageCode?: string): P
   // Start streaming STT in background — collect final segments as fallback
   ;(async () => {
     try {
-      for await (const partial of stt.streamTranscribe(audioStream, { languageCode })) {
+      for await (const partial of stt.streamTranscribe(audioStream, ...(languageCode !== undefined ? [{ languageCode }] : []))) {
         const typedPartial = partial as PartialTranscript
         send(ws, {
           type: 'partial_transcript',

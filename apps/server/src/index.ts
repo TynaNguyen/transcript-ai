@@ -108,7 +108,8 @@ app.get('*', async (c) => {
 // createAdaptorServer tạo http.Server mà không start — ta gắn WS vào rồi mới listen
 const server = createAdaptorServer(app)
 
-const wss = new WebSocketServer({ server })
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const wss = new WebSocketServer({ server: server as any })
 wss.on('connection', (ws, req) => {
   if (req.url?.startsWith('/ws/live')) {
     const url = new URL(req.url, 'http://localhost')

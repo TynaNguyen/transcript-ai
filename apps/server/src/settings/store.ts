@@ -19,7 +19,7 @@ export async function getSettings(): Promise<AppSettings> {
   try {
     const raw = await readFile(SETTINGS_FILE, 'utf8')
     const parsed = JSON.parse(raw) as Partial<AppSettings>
-    _cache = deepMerge(DEFAULT_SETTINGS, parsed) as AppSettings
+    _cache = deepMerge(DEFAULT_SETTINGS, parsed) as unknown as AppSettings
     return _cache
   } catch {
     return {
@@ -32,7 +32,7 @@ export async function getSettings(): Promise<AppSettings> {
 
 export async function updateSettings(patch: Partial<AppSettings>): Promise<AppSettings> {
   const current = await getSettings()
-  const updated = deepMerge(current, patch) as AppSettings
+  const updated = deepMerge(current, patch) as unknown as AppSettings
   _cache = updated
   await mkdir(DATA_DIR, { recursive: true })
   await writeFile(SETTINGS_FILE, JSON.stringify(updated, null, 2), 'utf8')
