@@ -153,3 +153,7 @@ body.electron::before {
     page-break-inside: avoid;
   }
 }
+
+/* Electron frameless window: drag handle and interactive override */
+.drag-region { -webkit-app-region: drag; }
+.no-drag { -webkit-app-region: no-drag; }
