@@ -1,0 +1,155 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    box-sizing: border-box;
+  }
+
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    background-color: #F2F2F2;
+    color: #1A1A1A;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    font-size: 16px;
+    line-height: 1.5;
+  }
+
+  /* Hide all scrollbars */
+  * {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  *::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+@layer components {
+  /* Reusable component classes — dùng @apply */
+  .btn-primary {
+    @apply bg-primary text-white font-semibold px-5 py-2.5 rounded-md
+           hover:opacity-85 transition-opacity text-body;
+  }
+
+  .btn-secondary {
+    @apply bg-transparent text-text border border-border font-medium px-5 py-2.5 rounded-md
+           hover:bg-surface-2 transition-colors text-body;
+  }
+
+  .card {
+    @apply bg-surface border border-border rounded-lg p-5 shadow-card;
+  }
+
+  .input {
+    @apply bg-surface border border-border rounded-md px-4 py-3 text-body text-text
+           placeholder:text-text-3 focus:outline-none focus:border-primary transition-colors
+           w-full;
+  }
+
+  .tag-accent {
+    @apply bg-accent/10 text-accent text-tiny font-medium px-2 py-0.5 rounded-sm;
+  }
+
+  .tag-default {
+    @apply bg-surface-2 text-text-2 text-tiny font-medium px-2 py-0.5 rounded-sm;
+  }
+}
+
+  /* Chat bubble markdown — smaller scale than full report */
+  .chat-markdown h1 { @apply text-heading font-bold mt-3 mb-1; }
+  .chat-markdown h2 { @apply text-body font-semibold mt-2 mb-1; }
+  .chat-markdown h3 { @apply text-small font-semibold mt-2 mb-0.5; }
+  .chat-markdown p  { @apply text-small leading-relaxed my-1; }
+  .chat-markdown ul { @apply my-1 space-y-0.5; }
+  .chat-markdown li { @apply text-small ml-4 list-disc; }
+  .chat-markdown strong { @apply font-semibold; }
+  .chat-markdown code { @apply bg-black/10 px-1 py-0.5 rounded text-tiny font-mono; }
+  .chat-markdown table { @apply w-full text-tiny border border-border/50 rounded my-2; }
+  .chat-markdown td { @apply px-2 py-1 border-b border-border/30; }
+
+/* ── Electron native app ─────────────────────────────────────────────────────
+   body.electron is added by main.ts after window loads.
+   Traffic lights sit at ~x:8 y:8, width ~72px height ~20px.
+   We need:
+     1. header elements to be draggable (window drag)
+     2. padding-left on headers so content doesn't go under traffic lights
+     3. Interactive children of header must opt out of drag
+   ────────────────────────────────────────────────────────────────────────── */
+
+body.electron header {
+  -webkit-app-region: drag;
+  padding-left: 84px !important;  /* clear traffic lights */
+  user-select: none;
+}
+
+/* All interactive elements inside header must NOT be part of drag region */
+body.electron header button,
+body.electron header a,
+body.electron header input,
+body.electron header select,
+body.electron header label {
+  -webkit-app-region: no-drag;
+}
+
+/* Pages without a <header> (HomePage, SessionsPage, IngestPage) use pt-16.
+   Add an invisible 28px drag strip so those pages are also draggable from the top. */
+body.electron::before {
+  content: '';
+  display: block;
+  position: fixed;
+  top: 0;
+  left: 80px;   /* skip traffic light area */
+  right: 0;
+  height: 28px;
+  -webkit-app-region: drag;
+  z-index: 9999;
+  pointer-events: none;  /* doesn't block clicks on page content */
+}
+
+/* Print / Save-as-PDF */
+@media print {
+  header,
+  aside,
+  .no-print {
+    display: none !important;
+  }
+
+  body {
+    background: white;
+    color: black;
+    font-size: 12pt;
+  }
+
+  main {
+    padding: 0;
+  }
+
+  .max-w-7xl {
+    max-width: 100%;
+    padding: 0;
+  }
+
+  .card {
+    border: none;
+    box-shadow: none;
+    padding: 0;
+  }
+
+  article {
+    max-width: 100%;
+  }
+
+  h1, h2, h3 {
+    page-break-after: avoid;
+  }
+
+  table {
+    page-break-inside: avoid;
+  }
+}

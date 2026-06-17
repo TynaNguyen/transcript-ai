@@ -1,0 +1,32 @@
+{
+  "name": "@transcript/server",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "tsx src/index.ts",
+    "dev:watch": "tsx watch src/index.ts",
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint src --ext .ts"
+  },
+  "dependencies": {
+    "@transcript/shared": "*",
+    "@supabase/supabase-js": "^2.43.0",
+    "assemblyai": "^4.7.0",
+    "@google/generative-ai": "^0.15.0",
+    "hono": "^4.4.0",
+    "@hono/node-server": "^1.11.0",
+    "ws": "^8.17.0",
+    "dotenv": "^16.4.0",
+    "zod": "^3.23.0",
+    "@hono/zod-validator": "^0.2.2"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/ws": "^8.5.0",
+    "tsx": "^4.15.0",
+    "typescript": "^5.4.0"
+  }
+}

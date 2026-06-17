@@ -1,0 +1,45 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  release:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest, windows-latest, ubuntu-latest]
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install all workspace dependencies
+        run: npm ci
+
+      - name: Build shared package
+        run: npm run build -w packages/shared
+
+      - name: Build web frontend
+        run: npm run build -w apps/web
+
+      - name: Bundle Hono server
+        working-directory: apps/server
+        run: npx @vercel/ncc build src/index.ts -o ../desktop/bundled-server --transpile-only
+
+      - name: Create .env placeholder (API keys now stored in ~/.transcript-ai/settings.json)
+        run: echo "" > .env
+
+      - name: Build & publish Electron app
+        working-directory: apps/desktop
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: npx tsc && npx electron-builder --publish always

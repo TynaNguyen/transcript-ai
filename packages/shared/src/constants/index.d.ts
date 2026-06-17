@@ -1,0 +1,20 @@
+import type { Language, SourceKind, ExportFormat } from '../types/index.js';
+export declare const MAX_AUDIO_SIZE_MB = 500;
+export declare const MAX_VIDEO_SIZE_MB = 1000;
+export declare const MAX_PDF_SIZE_MB = 50;
+export declare const STT_CHUNK_SIZE_MS = 250;
+export declare const STT_SAMPLE_RATE = 16000;
+export declare const STT_MAX_SPEAKERS = 10;
+export declare const LLM_MAX_CONTEXT_TOKENS = 900000;
+export declare const LLM_RATE_LIMIT_RETRY_MS = 2000;
+export declare const REPORT_MIN_LENGTH_WORDS = 300;
+export declare const SUPPORTED_LANGUAGES: Language[];
+export declare const SOURCE_KINDS: SourceKind[];
+export declare const EXPORT_FORMATS: ExportFormat[];
+export declare const LANGUAGE_LABELS: Record<Language, string>;
+export declare const DEFAULT_SESSION_TITLE = "Untitled Session";
+export declare const SESSION_POLL_INTERVAL_MS = 1500;
+export declare const WS_HEARTBEAT_INTERVAL_MS = 30000;
+export declare const WS_RECONNECT_DELAY_MS = 3000;
+export declare const WS_MAX_RECONNECT_ATTEMPTS = 5;
+//# sourceMappingURL=index.d.ts.map

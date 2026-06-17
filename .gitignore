@@ -1,0 +1,13 @@
+node_modules/
+dist/
+.env
+.env.local
+*.log
+.DS_Store
+.turbo/
+coverage/
+
+# Electron build artifacts
+apps/desktop/release/
+apps/desktop/bundled-server/
+apps/web/dist/
