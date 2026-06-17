@@ -2,6 +2,11 @@
   "name": "transcript-ai-desktop",
   "version": "1.0.0",
   "description": "Transcript AI — native desktop app",
+  "homepage": "https://github.com/TynaNguyen/transcript-ai",
+  "author": {
+    "name": "Tyna Nguyen",
+    "email": "giangnguyenpr96@gmail.com"
+  },
   "main": "dist/main.js",
   "scripts": {
     "dev": "tsc && electron .",
