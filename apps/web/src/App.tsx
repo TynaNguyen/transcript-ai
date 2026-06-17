@@ -8,6 +8,7 @@ import ReportPage from './pages/ReportPage.js'
 import IngestPage from './pages/IngestPage.js'
 import SessionsPage from './pages/SessionsPage.js'
 import SettingsPage from './pages/SettingsPage.js'
+import CompactRecordingPage from './pages/CompactRecordingPage.js'
 import { ToastProvider } from './components/Toast.js'
 
 // ── Settings context ───────────────────────────────────────────────────────────
@@ -62,6 +63,7 @@ export default function App() {
         <BrowserRouter>
           <Routes>
             <Route path="/settings" element={<SettingsPage />} />
+            <Route path="/live-compact" element={<CompactRecordingPage />} />
             <Route
               path="/*"
               element={

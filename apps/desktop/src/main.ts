@@ -25,8 +25,8 @@ import { parse as parseEnv } from 'dotenv'
 const DEV = !app.isPackaged
 const SERVER_PORT = 3001
 const SERVER_READY_TIMEOUT_MS = 15_000
-const COMPACT_W = 400
-const COMPACT_H = 620
+const COMPACT_W = 580
+const COMPACT_H = 300
 
 // ── Window references ────────────────────────────────────────────────────────
 
@@ -251,12 +251,13 @@ function createCompactWindow() {
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,
-      sandbox: true,
+      sandbox: false,
+      preload: path.join(__dirname, 'preload.js'),
     },
   })
 
   const base = DEV ? 'http://localhost:5173' : `http://localhost:${SERVER_PORT}`
-  void compactWin.loadURL(`${base}/live?compact=true`)
+  void compactWin.loadURL(`${base}/live-compact`)
 
   // When compact navigates to report page, promote it to a full-size main window
   compactWin.webContents.on('will-navigate', (_, url) => {
@@ -307,6 +308,7 @@ function createTray() {
 // ── IPC ───────────────────────────────────────────────────────────────────────
 
 ipcMain.on('close-compact', () => compactWin?.close())
+ipcMain.on('set-compact-pinned', (_, pinned: boolean) => compactWin?.setAlwaysOnTop(pinned))
 
 // ── Auto-updater ──────────────────────────────────────────────────────────────
 
