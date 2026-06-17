@@ -4,14 +4,12 @@ Record meetings, import videos/PDFs/web pages — get instant transcripts, summa
 
 ## Download
 
-Go to **[Releases](https://github.com/TynaNguyen/transcript-ai/releases/latest)** and pick the file for your OS:
-
-| Platform | File to download |
-|----------|-----------------|
-| macOS (Apple Silicon) | `Transcript AI-x.x.x-arm64.dmg` |
-| macOS (Intel) | `Transcript AI-x.x.x.dmg` |
-| Windows | `Transcript AI Setup x.x.x.exe` |
-| Linux | `Transcript AI-x.x.x.AppImage` or `.deb` |
+| Platform | Download |
+|----------|----------|
+| macOS (Apple Silicon M1/M2/M3) | [**Download .dmg (arm64)**](https://github.com/TynaNguyen/transcript-ai/releases/latest) |
+| macOS (Intel) | [**Download .dmg (x64)**](https://github.com/TynaNguyen/transcript-ai/releases/latest) |
+| Windows | [**Download .exe**](https://github.com/TynaNguyen/transcript-ai/releases/latest) |
+| Linux | [**Download .AppImage / .deb**](https://github.com/TynaNguyen/transcript-ai/releases/latest) |
 
 **First launch:** The app will ask for your [Google Gemini API key](https://aistudio.google.com/apikey). Your data stays on your machine — nothing is sent to our servers.
 
