@@ -10,7 +10,7 @@
  */
 
 import { useState, useEffect } from 'react'
-import { useNavigate, useSearchParams } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { Mic, Square, ArrowLeft, AlertCircle, Pencil, Check, Globe, Download, X } from 'lucide-react'
 import { formatDuration } from '@transcript/shared'
 import { useLiveRecording } from '../hooks/useLiveRecording.js'
@@ -21,8 +21,7 @@ import { api } from '../api/client.js'
 
 export default function LiveRecordingPage() {
   const navigate = useNavigate()
-  const [searchParams] = useSearchParams()
-  const isCompact = searchParams.get('compact') === 'true'
+  const isCompact = new URLSearchParams(window.location.search).get('compact') === 'true'
   const { settings } = useAppSettings()
   const defaultSourceLang = settings?.liveRecording.defaultSourceLang ?? 'en'
   const defaultTranslateLang = settings?.liveRecording.defaultTranslateLang ?? 'vi'
@@ -76,60 +75,59 @@ export default function LiveRecordingPage() {
   // ── Compact overlay mode (launched from tray icon) ──────────────────────────
   if (isCompact) {
     return (
-      <main className="h-screen bg-surface flex flex-col overflow-hidden select-none">
-        {/* Drag handle — allows moving the frameless window */}
-        <header className="drag-region h-10 bg-surface border-b border-border flex items-center px-3 gap-2 shrink-0">
-          <span className="w-1.5 h-1.5 rounded-full bg-primary opacity-70" />
-          <span className="text-tiny font-semibold text-text-2 tracking-wide">Transcript AI</span>
+      <main className="h-screen bg-bg flex flex-col overflow-hidden select-none rounded-t-xl border border-border shadow-2xl">
+
+        {/* ── Title bar (drag region) ── */}
+        <header className="drag-region shrink-0 h-11 bg-surface border-b border-border flex items-center px-4 gap-3 rounded-t-xl">
+          <span className="text-small font-semibold text-text">Transcript AI</span>
 
           {status === 'recording' && (
-            <div className="flex items-center gap-1.5 ml-1">
+            <>
               <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
               <span className="font-mono text-tiny tabular-nums text-text-2">
                 {formatDuration(duration)}
               </span>
-            </div>
+            </>
           )}
 
-          <div className="ml-auto no-drag flex items-center gap-1.5">
+          <div className="ml-auto no-drag flex items-center gap-2">
             {status === 'recording' && (
               <button
                 onClick={stopRecording}
-                className="flex items-center gap-1 bg-red-500 hover:bg-red-600 text-white
-                           text-tiny font-semibold px-2.5 py-1 rounded transition-colors"
+                className="flex items-center gap-1.5 bg-red-500 hover:bg-red-600 text-white
+                           text-tiny font-semibold px-3 py-1 rounded-md transition-colors"
               >
-                <Square size={9} fill="currentColor" />
+                <Square size={10} fill="currentColor" />
                 Stop
               </button>
             )}
             <button
               onClick={() => window.close()}
-              className="w-6 h-6 flex items-center justify-center rounded text-text-3
+              className="w-7 h-7 flex items-center justify-center rounded-md text-text-3
                          hover:text-text hover:bg-border transition-colors"
-              title="Close"
             >
-              <X size={13} />
+              <X size={14} />
             </button>
           </div>
         </header>
 
-        {/* Content area */}
+        {/* ── Content ── */}
         <div className="flex-1 overflow-hidden flex flex-col">
 
-          {/* Idle: show language selectors + start button */}
+          {/* Idle: language config + start */}
           {status === 'idle' && (
-            <div className="flex-1 flex flex-col gap-4 p-4 overflow-y-auto">
-              <div className="space-y-1">
-                <p className="text-tiny text-text-3 font-medium uppercase tracking-wide">Speaking</p>
-                <div className="flex gap-1.5 flex-wrap">
+            <div className="flex-1 flex flex-col p-5 gap-5">
+              <div className="space-y-2">
+                <p className="text-tiny text-text-3 font-medium uppercase tracking-widest">Speaking</p>
+                <div className="flex gap-2 flex-wrap">
                   {([null, 'vi', 'en'] as const).map((lang) => (
                     <button
                       key={lang ?? 'auto'}
                       onClick={() => setSourceLang(lang)}
-                      className={`px-2.5 py-1 rounded text-tiny font-medium border transition-colors ${
+                      className={`px-3 py-1.5 rounded-md text-small font-medium border transition-colors ${
                         sourceLang === lang
                           ? 'bg-primary text-white border-primary'
-                          : 'border-border text-text-2 hover:text-text'
+                          : 'border-border text-text-2 hover:text-text hover:border-border-2'
                       }`}
                     >
                       {lang === null ? 'Auto' : lang === 'vi' ? 'Tiếng Việt' : 'English'}
@@ -137,17 +135,18 @@ export default function LiveRecordingPage() {
                   ))}
                 </div>
               </div>
-              <div className="space-y-1">
-                <p className="text-tiny text-text-3 font-medium uppercase tracking-wide">Translate to</p>
-                <div className="flex gap-1.5 flex-wrap">
+
+              <div className="space-y-2">
+                <p className="text-tiny text-text-3 font-medium uppercase tracking-widest">Translate to</p>
+                <div className="flex gap-2 flex-wrap">
                   {([null, 'vi', 'en', 'fr'] as const).map((lang) => (
                     <button
                       key={lang ?? 'off'}
                       onClick={() => setTranslateLang(lang)}
-                      className={`px-2.5 py-1 rounded text-tiny font-medium border transition-colors ${
+                      className={`px-3 py-1.5 rounded-md text-small font-medium border transition-colors ${
                         translateLang === lang
                           ? 'bg-primary text-white border-primary'
-                          : 'border-border text-text-2 hover:text-text'
+                          : 'border-border text-text-2 hover:text-text hover:border-border-2'
                       }`}
                     >
                       {lang === null ? 'Off' : lang === 'vi' ? 'Tiếng Việt' : lang === 'en' ? 'English' : 'Français'}
@@ -155,40 +154,51 @@ export default function LiveRecordingPage() {
                   ))}
                 </div>
               </div>
-              <button
-                onClick={() => void startRecording()}
-                className="btn-primary w-full flex items-center justify-center gap-2 py-2.5 mt-auto"
-              >
-                <Mic size={14} />
-                Start Recording
-              </button>
+
+              <div className="flex-1 flex items-end">
+                <button
+                  onClick={() => void startRecording()}
+                  className="btn-primary w-full flex items-center justify-center gap-2 py-3 text-body"
+                >
+                  <Mic size={16} />
+                  Start Recording
+                </button>
+              </div>
+
+              <p className="text-tiny text-text-3 text-center">
+                Inform all participants before recording.
+              </p>
             </div>
           )}
 
-          {/* Recording: live transcript feed */}
+          {/* Recording: transcript feed */}
           {status === 'recording' && (
-            <div className="flex-1 overflow-y-auto p-3">
-              <LiveTranscriptFeed lines={lines} speakerNames={speakerNames} />
+            <div className="flex-1 overflow-y-auto px-4 py-3">
+              {lines.length === 0 ? (
+                <div className="h-full flex flex-col items-center justify-center gap-2 text-text-3">
+                  <Mic size={20} className="opacity-30" />
+                  <p className="text-small">Listening…</p>
+                </div>
+              ) : (
+                <LiveTranscriptFeed lines={lines} speakerNames={speakerNames} />
+              )}
             </div>
           )}
 
           {/* Processing */}
           {status === 'processing' && (
-            <div className="flex-1 flex flex-col items-center justify-center gap-3 p-4">
-              <div className="w-6 h-6 border-2 border-border border-t-primary rounded-full animate-spin" />
-              <p className="text-small text-text-2 text-center">Generating report…</p>
+            <div className="flex-1 flex flex-col items-center justify-center gap-4">
+              <div className="w-7 h-7 border-2 border-border border-t-primary rounded-full animate-spin" />
+              <p className="text-small text-text-2">Generating report…</p>
             </div>
           )}
 
           {/* Error */}
           {status === 'error' && (
-            <div className="p-4 space-y-2">
-              <p className="text-small font-medium text-red-700">Recording failed</p>
-              <p className="text-tiny text-red-600">{errorMessage}</p>
-              <button
-                onClick={() => window.location.reload()}
-                className="text-tiny text-text-2 underline"
-              >
+            <div className="p-5 space-y-3">
+              <p className="text-body font-medium text-red-700">Recording failed</p>
+              <p className="text-small text-red-600">{errorMessage}</p>
+              <button onClick={() => window.location.reload()} className="text-small text-text-2 underline">
                 Try again
               </button>
             </div>

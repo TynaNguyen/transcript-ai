@@ -25,8 +25,8 @@ import { parse as parseEnv } from 'dotenv'
 const DEV = !app.isPackaged
 const SERVER_PORT = 3001
 const SERVER_READY_TIMEOUT_MS = 15_000
-const COMPACT_W = 380
-const COMPACT_H = 540
+const COMPACT_W = 400
+const COMPACT_H = 620
 
 // ── Window references ────────────────────────────────────────────────────────
 
@@ -99,7 +99,7 @@ function pngChunk(type: string, data: Buffer): Buffer {
 function createCirclePNG(size: number): Buffer {
   const ihdr = Buffer.alloc(13)
   ihdr.writeUInt32BE(size, 0); ihdr.writeUInt32BE(size, 4)
-  ihdr[8] = 8; ihdr[9] = 4  // bit depth 8, color type RGBA
+  ihdr[8] = 8; ihdr[9] = 6  // bit depth 8, color type 6 = RGBA (4 channels)
   const rows: number[] = []
   const mid = (size - 1) / 2, r = size / 2 - 1.5
   for (let y = 0; y < size; y++) {
@@ -233,7 +233,7 @@ function showMainWindow() {
 
 function getCompactPosition(): { x: number; y: number } {
   const { width, height } = screen.getPrimaryDisplay().workAreaSize
-  return { x: width - COMPACT_W - 16, y: height - COMPACT_H - 16 }
+  return { x: width - COMPACT_W - 12, y: height - COMPACT_H }
 }
 
 function createCompactWindow() {
