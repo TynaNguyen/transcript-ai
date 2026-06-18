@@ -59,7 +59,7 @@ git push && git push --tags
 ### For MacOS
 
 ```bash
-Open your terminal and type this to bypass the gatekeeper
+# Open your terminal and type this to bypass the gatekeeper
 xattr -cr "/Applications/Transcript AI.app"
 ```
 
