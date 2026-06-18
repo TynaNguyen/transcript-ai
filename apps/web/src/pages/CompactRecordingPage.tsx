@@ -1,13 +1,11 @@
 import { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { Mic, Square, X, Pin, PinOff } from 'lucide-react'
+import { Mic, Square, X, Pin, PinOff, ExternalLink } from 'lucide-react'
 import { formatDuration } from '@transcript/shared'
 import { useLiveRecording } from '../hooks/useLiveRecording.js'
 import { useAppSettings } from '../App.js'
 import LiveTranscriptFeed from '../components/LiveTranscriptFeed.js'
 
 export default function CompactRecordingPage() {
-  const navigate = useNavigate()
   const { settings } = useAppSettings()
   const defaultSourceLang = settings?.liveRecording.defaultSourceLang ?? 'en'
   const defaultTranslateLang = settings?.liveRecording.defaultTranslateLang ?? 'vi'
@@ -29,9 +27,10 @@ export default function CompactRecordingPage() {
 
   useEffect(() => {
     if (status === 'done' && reportId && sessionId) {
-      navigate(`/session/${sessionId}/report/${reportId}`, { state: { cost: sessionCost } })
+      window.electronCompact?.openReport(sessionId, reportId)
+      window.location.reload()
     }
-  }, [status, reportId, sessionId, sessionCost, navigate])
+  }, [status, reportId, sessionId])
 
   return (
     <main className="h-screen bg-surface flex flex-col overflow-hidden select-none border border-border rounded-t-xl shadow-2xl">
@@ -63,6 +62,15 @@ export default function CompactRecordingPage() {
           )}
 
           <button
+            onClick={() => window.electronCompact?.openMainApp()}
+            title="Open Transcript AI"
+            className="w-7 h-7 flex items-center justify-center rounded-md text-text-3
+                       hover:text-text hover:bg-border transition-colors"
+          >
+            <ExternalLink size={14} />
+          </button>
+
+          <button
             onClick={togglePin}
             title={isPinned ? 'Unpin' : 'Pin on top'}
             className={`w-7 h-7 flex items-center justify-center rounded-md transition-colors ${
@@ -87,10 +95,10 @@ export default function CompactRecordingPage() {
       {/* ── Content ── */}
       <div className="flex-1 overflow-hidden flex flex-col min-h-0">
 
-        {/* Idle: two-column language config + start button */}
+        {/* Idle: two-row language config + start button */}
         {status === 'idle' && (
           <div className="flex-1 flex flex-col justify-between p-4 gap-3">
-            <div className="flex gap-6">
+            <div className="space-y-3">
               <div className="space-y-1.5">
                 <p className="text-tiny text-text-3 font-medium uppercase tracking-widest">Speaking</p>
                 <div className="flex gap-1.5 flex-wrap">

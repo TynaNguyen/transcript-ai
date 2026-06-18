@@ -184,7 +184,7 @@ function stopServer() {
 
 // ── Main window ───────────────────────────────────────────────────────────────
 
-function createWindow() {
+function createWindow(initialUrl?: string) {
   const win = new BrowserWindow({
     width: 1280,
     height: 800,
@@ -200,8 +200,8 @@ function createWindow() {
 
   mainWin = win
 
-  const url = DEV ? 'http://localhost:5173' : `http://localhost:${SERVER_PORT}`
-  void win.loadURL(url)
+  const base = DEV ? 'http://localhost:5173' : `http://localhost:${SERVER_PORT}`
+  void win.loadURL(initialUrl ?? base)
 
   win.webContents.setWindowOpenHandler(({ url: u }) => {
     if (u.startsWith('http')) void shell.openExternal(u)
@@ -217,15 +217,16 @@ function createWindow() {
   if (DEV) win.webContents.openDevTools()
 }
 
-function showMainWindow() {
+function showMainWindow(url?: string) {
   const wins = BrowserWindow.getAllWindows().filter(w => w !== compactWin && !w.isDestroyed())
   if (wins.length > 0) {
     const win = wins[0]!
     if (win.isMinimized()) win.restore()
     win.show()
     win.focus()
+    if (url) void win.loadURL(url)
   } else {
-    createWindow()
+    createWindow(url)
   }
 }
 
@@ -251,7 +252,7 @@ function createCompactWindow() {
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,
-      sandbox: false,
+      sandbox: true,
       preload: path.join(__dirname, 'preload.js'),
     },
   })
@@ -259,24 +260,9 @@ function createCompactWindow() {
   const base = DEV ? 'http://localhost:5173' : `http://localhost:${SERVER_PORT}`
   void compactWin.loadURL(`${base}/live-compact`)
 
-  // When compact navigates to report page, promote it to a full-size main window
-  compactWin.webContents.on('will-navigate', (_, url) => {
-    if (!compactWin || !url.includes('/report/')) return
-    const { width, height } = screen.getPrimaryDisplay().workAreaSize
-    const w = Math.min(1280, width - 80)
-    const h = Math.min(800, height - 80)
-    compactWin.setAlwaysOnTop(false)
-    compactWin.setSkipTaskbar(false)
-    compactWin.setBounds({ x: Math.round((width - w) / 2), y: Math.round((height - h) / 2), width: w, height: h }, true)
-    compactWin.webContents.once('did-finish-load', () => {
-      void compactWin?.webContents.executeJavaScript(`document.body.classList.add('electron')`)
-    })
-    mainWin = compactWin
-    compactWin = null
-  })
-
   compactWin.once('ready-to-show', () => compactWin?.show())
   compactWin.on('closed', () => { compactWin = null })
+  if (DEV) compactWin.webContents.openDevTools({ mode: 'detach' })
 }
 
 function toggleCompactWindow() {
@@ -295,20 +281,26 @@ function createTray() {
 
   const menu = Menu.buildFromTemplate([
     { label: 'Start Recording', click: toggleCompactWindow },
-    { label: 'Open Transcript AI', click: showMainWindow },
+    { label: 'Open Transcript AI', click: () => showMainWindow() },
     { type: 'separator' },
     { label: 'Quit', click: () => { tray?.destroy(); tray = null; stopServer(); app.quit() } },
   ])
 
-  tray.setContextMenu(menu)
-  tray.on('click', toggleCompactWindow)        // macOS left-click, Windows left-click
-  tray.on('double-click', toggleCompactWindow) // Windows double-click
+  // macOS: setContextMenu overrides click → use right-click for menu, left-click for compact
+  tray.on('click', toggleCompactWindow)
+  tray.on('right-click', () => tray?.popUpContextMenu(menu))
+  tray.on('double-click', toggleCompactWindow) // Windows fallback
 }
 
 // ── IPC ───────────────────────────────────────────────────────────────────────
 
+ipcMain.on('open-main-app', () => showMainWindow())
 ipcMain.on('close-compact', () => compactWin?.close())
 ipcMain.on('set-compact-pinned', (_, pinned: boolean) => compactWin?.setAlwaysOnTop(pinned))
+ipcMain.on('compact-open-report', (_, { sessionId, reportId }: { sessionId: string; reportId: string }) => {
+  const base = DEV ? 'http://localhost:5173' : `http://localhost:${SERVER_PORT}`
+  showMainWindow(`${base}/session/${sessionId}/report/${reportId}`)
+})
 
 // ── Auto-updater ──────────────────────────────────────────────────────────────
 
