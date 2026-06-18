@@ -82,7 +82,8 @@
     "publish": {
       "provider": "github",
       "owner": "TynaNguyen",
-      "repo": "transcript-ai"
+      "repo": "transcript-ai",
+      "releaseType": "release"
     }
   }
 }
