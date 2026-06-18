@@ -11,7 +11,7 @@ export default function CompactRecordingPage() {
   const defaultTranslateLang = settings?.liveRecording.defaultTranslateLang ?? 'vi'
 
   const {
-    status, lines, sessionId, reportId, sessionCost,
+    status, lines, sessionId, reportId,
     errorMessage, duration, translateLang, setTranslateLang,
     sourceLang, setSourceLang, startRecording, stopRecording,
   } = useLiveRecording({ initialSourceLang: defaultSourceLang, initialTranslateLang: defaultTranslateLang })
