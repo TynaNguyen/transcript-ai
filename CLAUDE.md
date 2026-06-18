@@ -272,30 +272,42 @@ Khai báo trong `build/entitlements.mac.plist`:
 ### Auto-update (Phase 5 — electron-updater)
 App tự kiểm tra update khi mở, tải về nền, hỏi user khi sẵn sàng cài.
 
-**Quy trình release — chỉ cần 3 lệnh:**
+**Quy trình release — checklist đầy đủ:**
 ```bash
 # 1. Bump version trong apps/desktop/package.json
-#    "version": "1.0.0" → "1.1.0"
+#    "version": "1.1.0" → "1.2.0"
 
+# 2. Commit + tag + push
 git add apps/desktop/package.json
-git commit -m "chore: bump version to 1.1.0"
-git tag v1.1.0
+git commit -m "chore: bump version to 1.2.0"
+git tag v1.2.0
 git push && git push --tags
-# → GitHub Actions tự build macOS/Windows/Linux rồi tạo GitHub Release
-# → App của người dùng tự nhận update lần mở tiếp theo
+# → GitHub Actions tự build macOS/Windows/Linux rồi publish GitHub Release
 ```
+
+**Nhắc user sau khi push tag:**
+1. Theo dõi CI tại `https://github.com/TynaNguyen/transcript-ai/actions` — build mất ~10-15 phút (3 OS song song)
+2. Khi xong → release tự publish tại `https://github.com/TynaNguyen/transcript-ai/releases`
+3. **Auto-update không hoạt động trên macOS** (app chưa code sign) → bảo user tải DMG mới về cài đè thủ công:
+   - Mac M1/M2/M3 → `Transcript-AI-x.x.x-arm64.dmg`
+   - Mac Intel → `Transcript-AI-x.x.x.dmg`
+   - Windows → `Transcript-AI-Setup-x.x.x.exe`
+4. Nếu macOS báo **"app bị hỏng"** khi mở sau khi cài → chạy: `xattr -cr "/Applications/Transcript AI.app"`
 
 **CI/CD:** `.github/workflows/release.yml` — trigger khi push tag `v*`.
 Mỗi job chạy trên OS riêng (macOS/Windows/Linux), build toàn bộ stack, upload lên GitHub Releases.
 `GH_TOKEN` = `secrets.GITHUB_TOKEN` tự động có trong GitHub Actions, không cần setup thêm.
+`releaseType: "release"` đã set trong `package.json` → CI publish trực tiếp, không tạo draft.
 
-**Flow update phía user:**
+**Flow update phía user (nếu app đã được code sign):**
 1. App mở → `autoUpdater.checkForUpdatesAndNotify()` chạy ngầm
 2. Nếu có version mới → tải về nền (không block UI)
 3. Khi tải xong → dialog "Restart & Update" / "Later"
 4. Chọn Restart → `autoUpdater.quitAndInstall()` cài và mở lại
 
-**Lưu ý macOS:** Auto-update chỉ hoạt động với app đã được **code sign**. App unsigned sẽ bị macOS block khi cài update ngầm.
+**Lưu ý macOS:** Auto-update chỉ hoạt động với app đã được **code sign** (Apple Developer Program $99/năm). App unsigned sẽ bị Gatekeeper block khi cài update ngầm → user phải tải DMG thủ công.
+
+**Pitfall — dev server conflict:** Khi test production app, phải tắt dev server (`npm run dev`) trước. Nếu dev server đang chạy trên port 3001, packaged Electron app sẽ dùng nhầm dev server (không có `ELECTRON_WEB_ROOT`) → app hiện 404. Kiểm tra tại `http://localhost:3001/debug-env` — nếu thấy `nodeEnv: "development"` thì đang bị conflict.
 
 ---
 
