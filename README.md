@@ -55,3 +55,12 @@ git tag v1.x.x
 git push && git push --tags
 # GitHub Actions builds and publishes automatically
 ```
+
+### For MacOS
+
+```bash
+Open your terminal and type this to bypass the gatekeeper
+xattr -cr "/Applications/Transcript AI.app"
+```
+
+
