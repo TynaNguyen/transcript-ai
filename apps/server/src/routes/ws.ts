@@ -119,7 +119,7 @@ export async function handleLiveSession(ws: WebSocket, languageCode?: string): P
               sessionId: session!.sessionId,
               template: 'meeting-minutes',
             })
-            const sttProvider = languageCode === 'en' ? 'assemblyai' : 'gemini'
+            const sttProvider = 'assemblyai'
             const audioDurationSec = content.meta.duration ?? 0
             // AssemblyAI Universal Streaming: ~$0.37/hr; Gemini audio: ~$0.06/hr (billed as tokens)
             const STT_COST_PER_SEC: Record<string, number> = {

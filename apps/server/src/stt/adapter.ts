@@ -63,13 +63,11 @@ function createAssemblyAIAdapter(apiKey: string): STTAdapter {
       options?: { languageCode?: string },
     ): AsyncIterable<PartialTranscript> {
       // AssemblyAI v3 Streaming API (wss://streaming.assemblyai.com/v3/ws)
-      // v2 realtime API is deprecated and returns 404
-      //
-      // universal-streaming-multilingual REQUIRES languageDetection: true and does NOT accept
-      // language_code. Passing language_code: 'vi' causes silent failures (zero transcripts)
-      // because it conflicts with or overrides the multilingual model selection.
-      // Vietnamese is routed to Gemini by the factory — this path handles all other languages.
-      const langOpts = { languageDetection: true }
+      // language_code: 'en' gives word-by-word partials for English.
+      // languageDetection: true is used for auto-detect or when language_code not set.
+      const langOpts = options?.languageCode
+        ? { language_code: options.languageCode }
+        : { languageDetection: true }
 
       console.warn('[STT] streamTranscribe lang:', options?.languageCode ?? 'auto-detect')
 
@@ -77,9 +75,7 @@ function createAssemblyAIAdapter(apiKey: string): STTAdapter {
         sampleRate: STT_SAMPLE_RATE,
         encoding: 'pcm_s16le',
         speakerLabels: true,
-        // universal-streaming-multilingual supports 99 languages including Vietnamese.
-        // Default model is English-only — without this, auto-detect fails for non-English.
-        speechModel: 'universal-streaming-multilingual' as string,
+        speechModel: 'universal-3-5-pro',
         ...langOpts,
         includePartialTurns: true,
         // Aggressive turn splitting for low-latency display:
@@ -442,31 +438,26 @@ export const stt: STTAdapter = {
   ): AsyncIterable<PartialTranscript> {
     const settings = await getSettings()
     const provider = settings.sttProvider || config.sttProvider
-    const assemblyKey = settings.apiKeys.assemblyai || config.assemblyaiKey
-    const geminiKey = settings.apiKeys.gemini || config.geminiApiKey
 
-    if (provider === 'gemini') {
-      if (!geminiKey) throw new Error('Gemini API key not configured.')
-      yield* createGeminiSTTAdapter(geminiKey).streamTranscribe(audioStream, options)
-      return
-    }
-
-    if (provider === 'deepgram') {
-      const key = settings.apiKeys.deepgram || config.deepgramKey
-      if (!key) throw new Error('Deepgram API key not configured.')
-      yield* createDeepgramAdapter(key).streamTranscribe(audioStream, options)
-      return
-    }
-
-    // assemblyai (default)
-    if (!assemblyKey) throw new Error('AssemblyAI API key not configured. Go to Settings to add your key.')
-
-    if (options?.languageCode === 'en' || !geminiKey) {
-      // English explicit, or no Gemini key → AssemblyAI only
-      yield* createAssemblyAIAdapter(assemblyKey).streamTranscribe(audioStream, options)
-    } else {
-      // Vietnamese + auto-detect → Gemini (accurate multilingual, 3s batches)
-      yield* createGeminiSTTAdapter(geminiKey).streamTranscribe(audioStream, options)
+    switch (provider) {
+      case 'gemini': {
+        const key = settings.apiKeys.gemini || config.geminiApiKey
+        if (!key) throw new Error('Gemini API key not configured.')
+        yield* createGeminiSTTAdapter(key).streamTranscribe(audioStream, options)
+        return
+      }
+      case 'deepgram': {
+        const key = settings.apiKeys.deepgram || config.deepgramKey
+        if (!key) throw new Error('Deepgram API key not configured.')
+        yield* createDeepgramAdapter(key).streamTranscribe(audioStream, options)
+        return
+      }
+      default: {
+        // assemblyai — universal-3-5-pro handles VI, EN, and 16 other languages natively
+        const key = settings.apiKeys.assemblyai || config.assemblyaiKey
+        if (!key) throw new Error('AssemblyAI API key not configured. Go to Settings to add your key.')
+        yield* createAssemblyAIAdapter(key).streamTranscribe(audioStream, options)
+      }
     }
   },
 }
